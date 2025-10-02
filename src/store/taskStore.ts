@@ -1,6 +1,14 @@
 import { create } from "zustand";
-import { Task, TaskStatus } from "../types/task";
+import {
+  Task,
+  TaskStatus,
+  TaskFilters,
+  SortConfig,
+  TaskPriority,
+} from "../types/task";
 import { saveTasks, loadTasks } from "../utils/db";
+import { applyFilters } from "../utils/taskFilters";
+import { applySort } from "../utils/taskSorters";
 
 interface TaskStore {
   tasks: Task[];
@@ -8,34 +16,53 @@ interface TaskStore {
   isLoading: boolean;
   isHydrated: boolean; // NEW: Track if data loaded from DB
 
+  // NEW: Filter and sort state
+  filters: TaskFilters;
+  sortConfig: SortConfig;
+
   // Actions
-  addTask: (title: string, description: string) => void;
+  addTask: (
+    title: string,
+    description: string,
+    priority?: TaskPriority,
+    dueDate?: number
+  ) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   moveTask: (id: string, newStatus: TaskStatus) => void;
   clearError: () => void;
-  hydrate: () => Promise<void>; // NEW: Load from DB
-  persistTasks: () => Promise<void>; // NEW: Save to DB
+  hydrate: () => Promise<void>;
+  persistTasks: () => Promise<void>;
+
+  // NEW: Filter and sort actions
+  setFilters: (filters: Partial<TaskFilters>) => void;
+  setSortConfig: (config: SortConfig) => void;
+  resetFilters: () => void;
+
+  // NEW: Computed getter for filtered/sorted tasks
+  getFilteredTasks: () => Task[];
 }
 
-/**
- * PERSISTENCE PATTERN: Hydration + Auto-save
- *
- * Hydration: Load data from storage on app start
- * Auto-save: Save after every state change
- *
- * Alternative patterns:
- * 1. Debounced save (wait N ms after last change)
- * 2. Manual save (user clicks "Save" button)
- * 3. Periodic save (every N seconds)
- *
- * We use immediate save for data safety
- */
+const DEFAULT_FILTERS: TaskFilters = {
+  search: "",
+  status: "all",
+  priority: "all",
+  showOverdue: false,
+};
+
+const DEFAULT_SORT: SortConfig = {
+  field: "createdAt",
+  direction: "desc", // Newest first by default
+};
 export const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   error: null,
   isLoading: false,
   isHydrated: false,
+
+  // Initialize filter/sort state
+  filters: DEFAULT_FILTERS,
+  sortConfig: DEFAULT_SORT,
 
   /**
    * HYDRATE: Load tasks from IndexedDB
@@ -91,7 +118,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
    * - Fire-and-forget pattern
    * - Errors logged but don't interrupt flow
    */
-  addTask: (title, description) => {
+  addTask: (title, description, priority, dueDate) => {
     try {
       if (!title?.trim()) {
         throw new Error("Task title is required");
@@ -103,6 +130,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         description: description.trim(),
         status: "todo",
         createdAt: Date.now(),
+        priority,
+        dueDate,
       };
 
       set((state) => ({
@@ -187,6 +216,58 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         error: error instanceof Error ? error.message : "Failed to move task",
       });
     }
+  },
+
+  /**
+   * UPDATE FILTERS
+   *
+   * Partial update allows changing one filter at a time
+   * Follows IMMUTABILITY principle
+   */
+  setFilters: (newFilters) => {
+    set((state) => ({
+      filters: { ...state.filters, ...newFilters },
+    }));
+  },
+
+  /**
+   * UPDATE SORT CONFIGURATION
+   */
+  setSortConfig: (config) => {
+    set({ sortConfig: config });
+  },
+
+  /**
+   * RESET FILTERS
+   *
+   * Useful "Clear All" functionality
+   */
+  resetFilters: () => {
+    set({
+      filters: DEFAULT_FILTERS,
+      sortConfig: DEFAULT_SORT,
+    });
+  },
+
+  /**
+   * GET FILTERED AND SORTED TASKS
+   *
+   * SELECTOR PATTERN:
+   * Compute derived state from base state
+   *
+   * This is a "getter" function that components call
+   * Returns processed tasks without storing them
+   */
+  getFilteredTasks: () => {
+    const { tasks, filters, sortConfig } = get();
+
+    // Apply filters first
+    let result = applyFilters(tasks, filters);
+
+    // Then apply sort
+    result = applySort(result, sortConfig);
+
+    return result;
   },
 
   clearError: () => set({ error: null }),

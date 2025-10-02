@@ -1,5 +1,6 @@
 export type TaskStatus = "todo" | "inProgress" | "done";
 
+// Priority levels with explicit typing
 export type TaskPriority = "low" | "medium" | "high";
 
 export interface Task {
@@ -8,12 +9,32 @@ export interface Task {
   description: string;
   status: TaskStatus;
   createdAt: number;
-  priority?: TaskPriority; // Optional property (?)
+  priority?: TaskPriority;
+  dueDate?: number; // NEW: Unix timestamp (ms) for consistency with createdAt
 }
 
-// Type for status display configuration
-export interface StatusConfig {
-  label: string;
-  color: string;
-  bgColor: string;
+/**
+ * FILTER STATE
+ *
+ * Centralized filter configuration
+ * Makes it easy to add new filter types
+ */
+export interface TaskFilters {
+  search: string;
+  status: TaskStatus | "all";
+  priority: TaskPriority | "all";
+  showOverdue: boolean;
+}
+
+/**
+ * SORT CONFIGURATION
+ *
+ * Type-safe sort options
+ */
+export type SortField = "createdAt" | "dueDate" | "priority" | "title";
+export type SortDirection = "asc" | "desc";
+
+export interface SortConfig {
+  field: SortField;
+  direction: SortDirection;
 }

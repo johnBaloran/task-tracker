@@ -26,11 +26,16 @@ interface DroppableTaskColumnProps {
  */
 export function DroppableTaskColumn({ status }: DroppableTaskColumnProps) {
   const config = STATUS_CONFIG[status];
+  // Subscribe to the actual data, not the function
   const tasks = useTaskStore((state) => state.tasks);
+  const filters = useTaskStore((state) => state.filters);
+  const sortConfig = useTaskStore((state) => state.sortConfig);
+  const getFilteredTasks = useTaskStore((state) => state.getFilteredTasks);
 
+  // Now useMemo will re-run when tasks, filters, or sortConfig change
   const columnTasks = useMemo(
-    () => tasks.filter((task) => task.status === status),
-    [tasks, status]
+    () => getFilteredTasks().filter((task) => task.status === status),
+    [tasks, filters, sortConfig, status, getFilteredTasks]
   );
 
   /**

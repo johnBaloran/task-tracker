@@ -3,7 +3,14 @@
 // Purpose: Store reusable values
 // ========================================
 
-import type { StatusConfig, TaskStatus } from "../types/task";
+import type { TaskStatus } from "../types/task";
+
+// Define StatusConfig HERE (where it's used)
+interface StatusConfig {
+  label: string;
+  color: string;
+  bgColor: string;
+}
 
 // Record<K, V> is a TypeScript utility type
 // Creates an object type with keys of type K and values of type V

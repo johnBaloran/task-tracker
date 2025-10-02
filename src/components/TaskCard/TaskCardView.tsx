@@ -1,6 +1,7 @@
 import { Task, TaskStatus } from "../../types/task";
 import { STATUS_CONFIG } from "../../utils/constant";
 import { TaskMoveButtons } from "./TaskMoveButtons";
+import { TaskMetadata } from "./TaskMetadata"; // NEW IMPORT
 
 interface TaskCardViewProps {
   task: Task;
@@ -84,8 +85,8 @@ export function TaskCardView({
         </p>
       )}
 
-      {/* METADATA SECTION */}
-      <div className="flex items-center gap-2 mb-3">
+      {/* Status Badge */}
+      <div className="mb-3">
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`}
           role="status"
@@ -93,14 +94,14 @@ export function TaskCardView({
         >
           {config.label}
         </span>
-        <time
-          className="text-xs text-gray-500"
-          dateTime={new Date(task.createdAt).toISOString()}
-          title={new Date(task.createdAt).toLocaleString()}
-        >
-          {new Date(task.createdAt).toLocaleDateString()}
-        </time>
       </div>
+
+      {/* METADATA SECTION */}
+      <TaskMetadata
+        priority={task.priority}
+        dueDate={task.dueDate}
+        createdAt={task.createdAt}
+      />
 
       {/* COMPOSITION PATTERN: Delegate movement UI to specialized component */}
       <TaskMoveButtons task={task} onMove={onMove} />
