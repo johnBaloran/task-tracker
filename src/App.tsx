@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { TaskForm } from "./components/TaskForm";
 import { DndTaskBoard } from "./components/TaskBoard/DndTaskBoard";
 import { useTaskStore } from "./store/taskStore";
+import { AIPanel } from "./components/AIPanel";
 
 /**
  * APP COMPONENT
@@ -56,7 +57,7 @@ export default function App() {
             Your tasks are automatically saved
           </p>
         </header>
-
+        <AIPanel /> {/* NEW */}
         <TaskForm />
         <DndTaskBoard />
       </div>

@@ -170,11 +170,19 @@ export async function saveTasks(tasks: Task[]): Promise<void> {
  */
 export async function loadTasks(): Promise<Task[]> {
   try {
-    const db = await initDB();
+    const db = await initDB(); // JavaScript (await) + our function
 
     return new Promise((resolve, reject) => {
+      //     ^^^^^^^^^^^ ^^^^^^^^  ^^^^^^
+      //     JavaScript Promise constructor
+
       const transaction = db.transaction([STORE_NAME], "readonly");
+      //                     ^^^^^^^^^^^
+      //                     IndexedDB method
+
       const store = transaction.objectStore(STORE_NAME);
+      //            ^^^^^^^^^^^^^^^^^^^
+      //            IndexedDB method
 
       /**
        * getAll() request
@@ -192,15 +200,26 @@ export async function loadTasks(): Promise<Task[]> {
        * };
        */
       const request = store.getAll();
-
+      //              ^^^^^^^^^^^^^^
+      //              IndexedDB method
       request.onsuccess = () => {
-        db.close();
+        //      ^^^^^^^^^
+        //      IndexedDB callback
+
+        db.close(); // IndexedDB method
         resolve(request.result as Task[]);
+        //^^^^^ ^^^^^^^^^^^^^^
+        //JS     IndexedDB property
       };
 
       request.onerror = () => {
-        db.close();
+        //      ^^^^^^^
+        //      IndexedDB callback
+
+        db.close(); // IndexedDB
         reject(new Error("Failed to load tasks"));
+        //^^^^  ^^^ ^^^^^
+        //JS     JS  JS
       };
     });
   } catch (error) {
