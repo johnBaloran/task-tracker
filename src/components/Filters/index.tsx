@@ -1,3 +1,5 @@
+import { useCallback } from "react"; // ADD THIS
+
 import { useTaskStore } from "../../store/taskStore";
 import { SearchBar } from "./SearchBar";
 import { FilterControls } from "./FilterControls";
@@ -21,6 +23,14 @@ export function Filters() {
   const resetFilters = useTaskStore((state) => state.resetFilters);
   const tasks = useTaskStore((state) => state.tasks);
   const getFilteredTasks = useTaskStore((state) => state.getFilteredTasks);
+
+  // Wrap in useCallback to stabilize reference
+  const handleSearchChange = useCallback(
+    (search: string) => {
+      setFilters({ search });
+    },
+    [setFilters]
+  );
 
   const filteredCount = getFilteredTasks().length;
   const hasActiveFilters =
@@ -47,10 +57,7 @@ export function Filters() {
 
       <div className="space-y-4">
         {/* Search Bar */}
-        <SearchBar
-          value={filters.search}
-          onChange={(search) => setFilters({ search })}
-        />
+        <SearchBar value={filters.search} onChange={handleSearchChange} />
 
         {/* Filter Controls */}
         <FilterControls filters={filters} onChange={setFilters} />

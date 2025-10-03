@@ -29,6 +29,8 @@ export function SearchBar({
     }
 
     timeoutRef.current = window.setTimeout(() => {
+      console.log("Search value being sent to store:", localValue); // DEBUG
+
       onChange(localValue);
     }, 300);
 

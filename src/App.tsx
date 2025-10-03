@@ -3,6 +3,7 @@ import { TaskForm } from "./components/TaskForm";
 import { DndTaskBoard } from "./components/TaskBoard/DndTaskBoard";
 import { useTaskStore } from "./store/taskStore";
 import { AIPanel } from "./components/AIPanel";
+import { Filters } from "./components/Filters";
 
 /**
  * APP COMPONENT
@@ -57,8 +58,9 @@ export default function App() {
             Your tasks are automatically saved
           </p>
         </header>
-        <AIPanel /> {/* NEW */}
+        <AIPanel />
         <TaskForm />
+        <Filters />
         <DndTaskBoard />
       </div>
     </div>

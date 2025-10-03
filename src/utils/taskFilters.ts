@@ -18,7 +18,12 @@ import { isOverdue } from "./dateHelpers";
  * Searches in title and description
  */
 export function filterBySearch(tasks: Task[], search: string): Task[] {
-  if (!search.trim()) return tasks;
+  console.log("filterBySearch called with:", {
+    tasksCount: tasks.length,
+    search,
+  }); // DEBUG
+
+  if (!search || !search.trim()) return tasks;
 
   const query = search.toLowerCase();
   return tasks.filter(
